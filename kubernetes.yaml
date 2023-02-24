@@ -4,7 +4,7 @@ metadata:
   name: edm
   namespace: default
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: edm
@@ -15,15 +15,29 @@ spec:
     spec:
       containers:
         - name: edm
-          image: edm:latest
-          imagePullPolicy: Never
+          image: sanketmore/edm:1.0
+          resources: 
+            requests:
+              memory: "125Mi"
+              cpu: "600m"
+            limits:
+              memory: "250Mi"
+              cpu: "1000m"
           ports:
             - containerPort: 8080
-          resources:
-            limits:
-              memory: 512Mi
-              cpu: '1'
-
+          env:
+          - name: DB_USER
+            valueFrom:
+              secretKeyRef:
+                name: edm-secret
+                key: db_user
+          - name: DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: edm-secret
+                key: db_password
+      imagePullSecrets:
+        - name: edm-repo
 ---
 apiVersion: v1
 kind: Service

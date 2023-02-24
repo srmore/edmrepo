@@ -13,7 +13,7 @@ services:
       - db-data:/var/lib/postgresql/data
 
   edm:
-    image: edm:1.0
+    image: sanketmore/edm:1.0
     restart: always
     env_file:
       - edm-props.env

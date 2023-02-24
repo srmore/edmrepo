@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: db
+spec:
+  selector:
+    matchLabels:
+      app: db
+  template:
+    metadata:
+      labels:
+        app: db
+    spec:
+      containers:
+        - name: db
+          image: postgres:15
+          volumeMounts:
+            - name: edm-storage
+              mountPath: /var/lib/postgresql/data
+          resources:
+            limits:
+              memory: 128Mi
+              cpu: 500m
+          ports:
+            - containerPort: 5432
+          env:
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: edm-secret
+                  key: db_user
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: edm-secret
+                  key: db_password
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: edm-secret
+                  key: postgres_password
+      volumes:
+        - name: edm-storage
+          persistentVolumeClaim:
+            claimName: edm-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: db
+spec:
+  selector:
+    app: db
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+      nodePort: 30930
+  type: NodePort
+  sessionAffinity: ClientIP

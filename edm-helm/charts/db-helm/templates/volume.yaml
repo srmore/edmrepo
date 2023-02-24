@@ -1,0 +1,30 @@
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: {{ .Values.volume.name }}
+  labels:
+    type: {{ .Values.volume.type }}
+    app: {{ include "db-helm.fullname" . }}
+spec:
+  storageClassName: {{ .Values.volume.storageClassName }}
+  capacity:
+    storage: {{ .Values.volume.size }}
+  accessModes:
+    - {{ .Values.volume.accessMode }}
+  hostPath:
+    path: {{ .Values.volume.path }}
+
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ .Values.volume.claimName }}
+  labels:
+    app: {{ include "db-helm.fullname" . }}
+spec:
+  storageClassName: {{ .Values.volume.storageClassName }}
+  accessModes:
+    - {{ .Values.volume.accessMode }}  # Sets read and write access
+  resources:
+    requests:
+      storage: {{ .Values.volume.size }}  # Sets volume size
