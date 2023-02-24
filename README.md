@@ -1,5 +1,5 @@
 ##CREATE SECRET FOR REPO
-kubectl create secret docker-registry edm-repo --docker-server=https://index.docker.io/v1/ --docker-username=sanketmore --docker-password=Srm@202310 --docker-email=srmore3322@gmail.com
+kubectl create secret docker-registry edm-repo --docker-server=https://index.docker.io/v1/ --docker-username=username --docker-password=password --docker-email=useremail
 kubectl get secret  edm-repo --output=yaml
 
 ##CREATE SECRET FOR EDM APP
