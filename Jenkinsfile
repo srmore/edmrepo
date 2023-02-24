@@ -1,12 +1,18 @@
 pipeline {
   agent any 
+  tools {
+    maven 'maven' 
+    jdk 'jdk1.8.0'
+  }
   stages {
     stage("Configure") {
       steps {
         echo 'setting up environment config'
          sh '''
             echo "PATH = ${PATH}"
+            echo "JAVA_HOME = ${JAVA_HOME}"
             echo "M2_HOME = ${M2_HOME}"
+            java -version
         '''
       }
     }
