@@ -3,6 +3,7 @@ pipeline {
   tools {
     maven 'maven' 
     jdk 'jdk11'
+    docker 'docker'
   }
   stages {
     stage("Configure") {
@@ -13,18 +14,25 @@ pipeline {
             echo "JAVA_HOME = ${JAVA_HOME}"
             echo "M2_HOME = ${M2_HOME}"
             java -version
+            docker --version
         '''
       }
     }
     stage("build") {
       steps {
         echo 'building the edm application'
-        sh 'mvn clean package -Pproduction'
+        sh 'mvn clean install'
       }
     }
     stage("test") {
       steps {
         echo 'testing the edm application'
+      }
+    }
+    stage("build image") {
+      steps {
+        echo 'building docker image'
+        sh 'docker build -t edm:1.0 .'
       }
     }
   }
