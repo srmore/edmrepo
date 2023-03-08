@@ -1,3 +1,7 @@
+##START MINIKUBE
+minikube start --cpus 3 --memory 3072 --driver=hyperv
+
+
 ##CREATE SECRET FOR REPO
 kubectl create secret docker-registry edm-repo --docker-server=https://index.docker.io/v1/ --docker-username=username --docker-password=password --docker-email=useremail
 kubectl get secret  edm-repo --output=yaml
@@ -29,3 +33,18 @@ kubectl get pvc
 
 ##GET SERVICES
 kubectl get services
+
+
+##DELETE CHART
+helm delete edm-test -n edm-test
+
+##INSTALL CHART
+helm install edm-test ./edm-helm -n edm-test
+
+
+##PUSH IMAGE FROM DOCKER HUB TO AWS ECR
+aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 322854463947.dkr.ecr.ap-south-1.amazonaws.com
+docker tag sm-edm-repo:latest 322854463947.dkr.ecr.ap-south-1.amazonaws.com/sm-edm-repo:latest
+docker push 322854463947.dkr.ecr.ap-south-1.amazonaws.com/sm-edm-repo:latest
+
+## Now change the image name and tag name in values.yaml file like 322854463947.dkr.ecr.ap-south-1.amazonaws.com/sm-edm-repo:latest

@@ -1,0 +1,12 @@
+apiVersion: eksctl.io/v1alpha5
+metadata:
+  name: basic-cluster
+  region: eu-north-1
+
+nodeGroups:
+  - name: edm-node-group
+    instanceType: t2.micro
+    desiredCapacity: 1
+    volumeSize: 80
+    ssh:
+      allow: true

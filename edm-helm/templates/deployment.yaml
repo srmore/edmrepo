@@ -6,14 +6,15 @@ metadata:
     {{- include "edm-helm.labels" . | nindent 4 }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
-  replicas: {{ .Values.replicaCount }}
+  replicas: {{ .Values.deployment.replicaCount }}
+  revisionHistoryLimit: 10
   {{- end }}
   selector:
     matchLabels:
       {{- include "edm-helm.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      {{- with .Values.podAnnotations }}
+      {{- with .Values.deployment.podAnnotations }}
       annotations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
@@ -21,15 +22,17 @@ spec:
         {{- include "edm-helm.selectorLabels" . | nindent 8 }}
     spec:
       imagePullSecrets:
-        - name: {{ .Values.imagePullSecrets }}
+        - name: {{ .Values.deployment.imagePullSecrets }}
+      dnsPolicy: {{ .Values.deployment.dnsPolicy }}
       containers:
-        - name: {{ .Values.fullname }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        - name: {{ include "edm-helm.fullname" . }}
+          image: "{{ .Values.deployment.image.repository }}:{{ .Values.deployment.image.tag | default .Chart.AppVersion }}"
           ports:
-            - name: http
+            - name: https
               containerPort: {{ .Values.service.port }}
               protocol: TCP
           resources:
-            {{- toYaml .Values.resources | nindent 12 }}
-          env: 
-            {{- toYaml .Values.env | nindent 12 }}
+            {{- toYaml .Values.deployment.resources | nindent 12 }}
+          envFrom:
+            - configMapRef:
+                name: edm-config

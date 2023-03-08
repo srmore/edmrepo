@@ -11,6 +11,6 @@ spec:
       targetPort: {{ .Values.service.port }}
       protocol: TCP
       name: http
-      nodePort: {{ .Values.service.nodePort }}
   selector:
     {{- include "db-helm.selectorLabels" . | nindent 4 }}
+  sessionAffinity: ClientIP

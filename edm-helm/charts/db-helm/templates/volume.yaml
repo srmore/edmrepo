@@ -1,20 +1,3 @@
-kind: PersistentVolume
-apiVersion: v1
-metadata:
-  name: {{ .Values.volume.name }}
-  labels:
-    type: {{ .Values.volume.type }}
-    app: {{ include "db-helm.fullname" . }}
-spec:
-  storageClassName: {{ .Values.volume.storageClassName }}
-  capacity:
-    storage: {{ .Values.volume.size }}
-  accessModes:
-    - {{ .Values.volume.accessMode }}
-  hostPath:
-    path: {{ .Values.volume.path }}
-
----
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:

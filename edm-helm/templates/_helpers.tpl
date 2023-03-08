@@ -46,8 +46,8 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 Selector labels
 */}}
 {{- define "edm-helm.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "edm-helm.name" . }}
-app.kubernetes.io/instance: {{ .Release.Name }}
+app: {{ .Values.fullname }}
+cluster: {{ .Values.fullname }}
 {{- end }}
 
 {{/*

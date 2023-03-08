@@ -1,29 +1,45 @@
-# Default values for edm-helm.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
-
 fullname: edm
+nameOverride: "edm"
+fullnameOverride: "edm"
 secretName: edm-secret
 repoName: edm-repo
 releaseName: edm
-replicaCount: 1
-uid: fc78ef95-42df-43c0-9dc9-7f6467cc61c9
-dockerConfigJson: eyJhdXRocyI6eyJodHRwczovL2luZGV4LmRvY2tlci5pby92MS8iOnsidXNlcm5hbWUiOiJzYW5rZXRtb3JlIiwicGFzc3dvcmQiOiJTcm1AMjAyMzEwIiwiZW1haWwiOiJzcm1vcmUzMzIyQGdtYWlsLmNvbSIsImF1dGgiOiJjMkZ1YTJWMGJXOXlaVHBUY20xQU1qQXlNekV3In19fQ==
+uid: 6be767e0-a9c8-4d20-8eb1-ae557ee423ef
+dockerConfigJson: eyJhdXRocyI6eyJodHRwczovL2luZGV4LmRvY2tlci5pby92MS8iOnsidXNlcm5hbWUiOiJzYW5rZXRtb3JlIiwicGFzc3dvcmQiOiJTcm1AMTk4OTEwIiwiZW1haWwiOiJzcm1vcmUzMzIyQGdtYWlsLmNvbSIsImF1dGgiOiJjMkZ1YTJWMGJXOXlaVHBUY20xQU1UazRPVEV3In19fQ==
 
 db: 
   user: postgres
   password: postgres
   postgresPassword: postgres
 
-image:
-  repository: sanketmore/edm
-  pullPolicy: IfNotPresent
-  # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
+deployment:
+  replicaCount: 1
+  imagePullSecrets: edm-repo
+  dnsPolicy: ClusterFirst
+  podAnnotations: {}
+  resources: 
+    requests:
+      memory: "125Mi"
+      cpu: "300m"
+    limits:
+      memory: "250Mi"
+      cpu: "500m"
+  env:
+    - name: DB_USER
+      valueFrom:
+        secretKeyRef:
+          name: edm-secret
+          key: db_user
+    - name: DB_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: edm-secret
+          key: db_password
+  image:
+    repository: 322854463947.dkr.ecr.ap-south-1.amazonaws.com/sm-edm-repo
+    pullPolicy: IfNotPresent
+    tag: "latest"
 
-imagePullSecrets: edm-repo
-nameOverride: "edm"
-fullnameOverride: "edm"
 
 serviceAccount:
   # Specifies whether a service account should be created
@@ -34,68 +50,48 @@ serviceAccount:
   # If not set and create is true, a name is generated using the fullname template
   name: ""
 
-podAnnotations: {}
-
-podSecurityContext: {}
-  # fsGroup: 2000
-
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
-
 service:
-  name: edm-balancer
-  type: LoadBalancer
+  name: edm
+  type: ClusterIP
   port: 8080
+  targetPort: 8080
   sessionAffinity: ClientIP
+  timeoutSeconds: 10000
 
 ingress:
-  enabled: false
+  enabled: true
   className: ""
-  annotations: {}
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
+  annotations:
+    alb.ingress.kubernetes.io/backend-protocol: HTTP
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:ap-south-1:322854463947:certificate/e2586fb3-5deb-4b26-b463-f9f246765516
+    alb.ingress.kubernetes.io/group.name: edm-test
+    alb.ingress.kubernetes.io/healthcheck-path: /
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
+    alb.ingress.kubernetes.io/load-balancer-attributes: idle_timeout.timeout_seconds=120
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/security-groups: sg-0533bf24a498319e0
+    alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-2016-08
+    alb.ingress.kubernetes.io/subnets: subnet-0749581efb2fe9eea, subnet-08a98012fe4522765
+    alb.ingress.kubernetes.io/success-codes: 200-499
+    alb.ingress.kubernetes.io/target-group-attributes: slow_start.duration_seconds=100,deregistration_delay.timeout_seconds=30     
+    alb.ingress.kubernetes.io/target-type: ip
+    kubernetes.io/ingress.class: alb
+    meta.helm.sh/release-name: edm-test
+    meta.helm.sh/release-namespace: edm-test
   hosts:
-    - host: chart-example.local
-      paths:
-        - path: /
+    - paths:
+        - path: /*
           pathType: ImplementationSpecific
   tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
-
-resources: 
-  requests:
-    memory: "125Mi"
-    cpu: "600m"
-  limits:
-    memory: "250Mi"
-    cpu: "1000m"
-
-env:
-  - name: DB_USER
-    valueFrom:
-      secretKeyRef:
-        name: edm-secret
-        key: db_user
-  - name: DB_PASSWORD
-    valueFrom:
-      secretKeyRef:
-        name: edm-secret
-        key: db_password
-
-autoscaling:
-  enabled: false
-  minReplicas: 1
-  maxReplicas: 10
-  targetCPUUtilizationPercentage: 80
 
 nodeSelector: {}
 
 tolerations: []
 
 affinity: {}
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
